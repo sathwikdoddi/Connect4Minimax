@@ -1,6 +1,4 @@
-from pipes import Template
 import numpy as np
-import random
 import sys
 import pygame
 import keyboard
@@ -36,7 +34,7 @@ def print_board(board):
     print(np.flip(board, 0))
 
 def winning_move(board, piece):
-    # Horizontal Win Check (not possible to win horizontally past index 3)
+    # Horizontal Win Check
     for c in range(COLUMNS - 3):
         for r in range(ROWS):
             if board[r][c] == piece and board[r][c+1] == piece and board[r][c+2] == piece and board[r][c+3] == piece:
@@ -88,7 +86,7 @@ screen = pygame.display.set_mode(size)
 draw_board(board)
 pygame.display.update()
 
-myfont = pygame.font.Font('freesansbold.ttf', 75)
+font = pygame.font.Font('freesansbold.ttf', 75)
 
 while not game_over:
     for event in pygame.event.get():
@@ -106,10 +104,10 @@ while not game_over:
 
                     if winning_move(board, 1):
                         game_over = True
-                        label = myfont.render("Player 1 Wins!", 1, RED)
+                        winner = font.render("Player 1 Wins!", 1, RED)
                         screen.fill(BLACK)
                         pygame.display.update()
-                        screen.blit(label, (100, 270))
+                        screen.blit(winner, (100, 270))
                         pygame.display.update()
             
             # Player 2 Input
@@ -123,10 +121,10 @@ while not game_over:
 
                     if winning_move(board, 2):
                         game_over = True
-                        label = myfont.render("Player 2 Wins!", 1, YELLOW)
+                        winner = font.render("Player 2 Wins!", 1, YELLOW)
                         screen.fill(BLACK)
                         pygame.display.update()
-                        screen.blit(label, (100, 270))
+                        screen.blit(winner, (100, 270))
                         pygame.display.update()
 
             if not game_over: draw_board(board)
