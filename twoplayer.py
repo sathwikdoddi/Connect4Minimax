@@ -5,8 +5,8 @@ import keyboard
 
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 200)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
+RED = (200, 0, 0)
+YELLOW = (200, 200, 0)
 
 ROWS = 6
 COLUMNS = 7
@@ -63,12 +63,11 @@ def draw_board(board):
     for c in range(COLUMNS):
         for r in range(ROWS):
             pygame.draw.rect(screen, BLUE, (c*SQUARE, r*SQUARE, SQUARE, SQUARE))
-            if temp[r][c] == 0:
-                pygame.draw.circle(screen, BLACK, (c*SQUARE + 50, r*SQUARE + 50), PIECERADIUS)
-            elif temp[r][c] == 1:
-                pygame.draw.circle(screen, RED, (c*SQUARE + 50, r*SQUARE + 50), PIECERADIUS)
-            else:
-                pygame.draw.circle(screen, YELLOW, (c*SQUARE + 50, r*SQUARE + 50), PIECERADIUS)
+            pygame.draw.circle(screen, BLACK, (c*SQUARE + 50, r*SQUARE + 50), PIECERADIUS)
+            if temp[r][c] == 1:
+                pygame.draw.circle(screen, RED, (c*SQUARE + 50, r*SQUARE + 50), PIECERADIUS-3)
+            elif temp[r][c] == 2:
+                pygame.draw.circle(screen, YELLOW, (c*SQUARE + 50, r*SQUARE + 50), PIECERADIUS-3)
     pygame.display.update()
 
 
@@ -100,9 +99,18 @@ while not game_over:
 
                 if is_valid_placement(board, column):
                     row = get_next_available_row(board, column)
+                    for r in range(5, row, -1):
+                        if r != 5: drop_piece(board, r+1, column, 0)
+                        drop_piece(board, r, column, 1)
+                        draw_board(board)
+                        pygame.time.wait(40)
+                    drop_piece(board, row+1, column, 0)
                     drop_piece(board, row, column, 1)
+                    draw_board(board)
 
                     if winning_move(board, 1):
+                        draw_board(board)
+                        pygame.time.wait(2000)
                         game_over = True
                         winner = font.render("Player 1 Wins!", 1, RED)
                         screen.fill(BLACK)
@@ -117,9 +125,18 @@ while not game_over:
 
                 if is_valid_placement(board, column):
                     row = get_next_available_row(board, column)
+                    for r in range(5, row, -1):
+                        if r != 5: drop_piece(board, r+1, column, 0)
+                        drop_piece(board, r, column, 2)
+                        draw_board(board)
+                        pygame.time.wait(40)
+                    drop_piece(board, row+1, column, 0)
                     drop_piece(board, row, column, 2)
+                    draw_board(board)
 
                     if winning_move(board, 2):
+                        draw_board(board)
+                        pygame.time.wait(2000)
                         game_over = True
                         winner = font.render("Player 2 Wins!", 1, YELLOW)
                         screen.fill(BLACK)
