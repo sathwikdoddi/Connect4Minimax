@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import pygame
 import keyboard
+import math
 import random
 
 BLACK = (0, 0, 0)
@@ -84,17 +85,22 @@ def window_evaluation(search_window, piece):
     if search_window.count(piece) == 4:
         score += 100
     elif search_window.count(piece) == 3 and search_window.count(0) == 1:
-        score += 10
+        score += 5
     elif search_window.count(piece) == 2 and search_window.count(0) == 2:
         score += 5
 
     if search_window.count(opponent) == 3 and search_window.count(0) == 1:
-        score -= 80
+        score -= 40
 
     return score
 
 def score_piece_setup(board, piece):
     score = 0
+
+    # Score Center Column
+    center_array = [int(i) for i in list(board[:,COLUMNS//2])]
+    score += center_array.count(piece) * 3
+
     # Score Horizontal
     for r in range(ROWS):
         row_array = [int(i) for i in list(board[r,:])]
@@ -123,6 +129,49 @@ def score_piece_setup(board, piece):
              
     return score
 
+def is_terminal_node(board):
+    return winning_move(board, 1) or winning_move(board, 2) or len(get_valid_locations(board)) == 0
+
+def minimax(board, depth, maximizing_player):
+    valid_locations = get_valid_locations(board)
+    is_terminal = is_terminal_node(board)
+    column = random.choice(valid_locations)
+
+    # Bottom of the Recursion Tree
+    if depth == 0 or is_terminal:
+        if is_terminal: # If game is over
+            if winning_move(board, 2):
+                return (None, 1000000000000)
+            elif winning_move(board, 1):
+                return (None, -1000000000000)
+            else: # If the board gets full
+                return (None, 0)
+        else: # If we reached the end of the depth
+            return (None, score_piece_setup(board, 2))
+
+    if maximizing_player:
+        value = -math.inf
+        for col in valid_locations:
+            row = get_next_available_row(board, col)
+            board_copy = board.copy()
+            drop_piece(board_copy, row, col, 2)
+            new_score = minimax(board_copy, depth-1, False)[1]
+            if new_score > value:
+                value = new_score
+                column = col
+        return column, value
+    else:
+        value = math.inf
+        for col in valid_locations:
+            row = get_next_available_row(board, col)
+            board_copy = board.copy()
+            drop_piece(board_copy, row, col, 1)
+            new_score = minimax(board_copy, depth-1, True)[1]
+            if new_score < value:
+                value = new_score
+                column = col
+        return column, value
+
 def get_valid_locations(board):
     valid_locations = []
     for col in range(COLUMNS):
@@ -131,21 +180,8 @@ def get_valid_locations(board):
 
     return valid_locations
 
-def pick_best_move(board, piece):
-    best_score = -10000
-    valid_locations = get_valid_locations(board)
-    best_placement = random.choice(valid_locations)
-    for col in valid_locations:
-        row = get_next_available_row(board, col)
-        temp_board = board.copy()
-        drop_piece(temp_board, row, col, piece)
 
-        score = score_piece_setup(temp_board, piece)
-        if score > best_score:
-            best_score = score
-            best_placement = col
-
-    return best_placement
+# Initializing Game
 
 board = create_board()
 game_over = False
@@ -214,7 +250,7 @@ while not game_over:
 
     if turn == 1 and not game_over:
         # column = random.randint(0, COLUMNS - 1)
-        column = pick_best_move(board, 2)
+        column = minimax(board, 4, True)[0]
 
         if is_valid_placement(board, column):
             row = get_next_available_row(board, column)
